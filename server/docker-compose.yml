@@ -1,0 +1,28 @@
+version: "3.8"
+services:
+  db:
+    image: postgres
+    restart: always
+    container_name: local_pgdb
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: password # Password for the database
+      POSTGRES_DB: vibebones # Database name
+    volumes:
+      - local_pgdata:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: always
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: postgres@domain.com # Email for the pgadmin
+      PGADMIN_DEFAULT_PASSWORD: password # Password for the pgadmin
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+volumes:
+  local_pgdata:
+  pgadmin-data:
