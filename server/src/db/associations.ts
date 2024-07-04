@@ -1,10 +1,10 @@
-import { DB } from "./types"; // Ajusta la importación según tu estructura de tipos
+import { DB } from "./types"; // Adjust the import based on your types structure
 
 module.exports = (db: DB): void => {
-  console.log("Verificando modelos disponibles...");
-  console.log("Modelos disponibles:", Object.keys(db));
+  console.log("Checking available models...");
+  console.log("Available models:", Object.keys(db));
 
-  // Definición de las asociaciones (relaciones)
+  // Definition of associations (relationships)
   db.users.hasMany(db.carts, { foreignKey: "user_id" });
   db.carts.belongsTo(db.users, { foreignKey: "user_id" });
 
@@ -41,5 +41,5 @@ module.exports = (db: DB): void => {
   db.categories.hasMany(db.product_category, { foreignKey: "category_id" });
   db.product_category.belongsTo(db.categories, { foreignKey: "category_id" });
 
-  console.log("Asociaciones establecidas correctamente.");
+  console.log("Associations successfully established.");
 };

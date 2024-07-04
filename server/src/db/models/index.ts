@@ -38,7 +38,7 @@ fs.readdirSync(__dirname)
     }
   });
 
-console.log("Modelos cargados correctamente:", (db));
+// console.log("Modelos cargados correctamente:", (db));
 
 // Import associations
 require("../associations")(db);
