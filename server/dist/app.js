@@ -15,14 +15,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("dotenv/config");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
-const catchAsync = require('./utils/catchAsync');
+const catchAsync_1 = __importDefault(require("../src/utils/catchAsync"));
 require("dotenv").config({ path: `${process.cwd()}/.env` });
-const AppError = require("./utils/appError");
+const appError_1 = __importDefault(require("../src/utils/appError"));
 // ROUTER
 const authRouter = require("./routes/authRoute");
 const userRouter = require("./routes/userRoute");
+const productRouter = require("./routes/productRoute");
 //port tcp
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 3000;
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use((0, cors_1.default)());
@@ -35,13 +36,12 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 // ROUTES
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/products", productRouter);
 // OTHER ROUTES
-app.use("*", catchAsync((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    throw new AppError(`Can't find ${req.originalUrl} on this server`, 404);
+app.use("*", (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    throw new appError_1.default(`Can't find ${req.originalUrl} on this server`, 404);
 })));
 app.listen(PORT, () => {
-    console.log(process.env.DB_USERNAME);
-    console.log(process.env.DB_PASSWORD);
     console.log(`Server listen on ${process.env.PORT}`);
 });
 //# sourceMappingURL=app.js.map

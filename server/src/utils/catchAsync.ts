@@ -1,12 +1,9 @@
-import { Request, Response, NextFunction, RequestHandler } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
-const catchAsync = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>): RequestHandler => {
-  const errorHandler: RequestHandler = (req, res, next) => {
+const catchAsync = (fn: any) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     fn(req, res, next).catch(next);
   };
-
-  return errorHandler;
 };
 
-module.exports = catchAsync;
 export default catchAsync;

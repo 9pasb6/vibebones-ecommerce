@@ -1,23 +1,21 @@
 // Models
 const db = require("../db/models/index");
-import { Request, Response} from 'express';
+import { Request, Response } from 'express';
 
 // External Libraries
 const { Sequelize } = require("sequelize");
 const sequelize = require("../config/database");
 
 // Utilities
-const catchAsync = require("../utils/catchAsync");
+import catchAsync from '../utils/catchAsync';
 
 // Error Handling
-const AppError = require("../utils/appError");
+import AppError from "../utils/appError";
 
 // ----------------------------------------------
 
-/**
- * Retrieves all users.
- */
-const getAllUser = catchAsync(async (req: Request, res: Response) => {
+// Retrieve all users
+const getAllUsers = catchAsync(async (req: Request, res: Response) => {
   const users = await db.users.findAndCountAll({
     where: {
       userType: {
@@ -32,58 +30,84 @@ const getAllUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// ----------------------------------------------
-
-/**
- * Assigns malls to a user.
- */
-const assignMallsToUser = catchAsync(async (req: Request, res: Response) => {
-  const { userId } = req.params;
-  const { malls } = req.body; // array of mall ids
-
-  // Iniciar transacción
-  await sequelize.transaction(async (t:any) => {
-    // Verificar la existencia del usuario
-    const foundUser = await db.users.findByPk(userId, { transaction: t });
-    if (!foundUser) {
-      throw new AppError("User not found", 404);
-    }
-
-    // Verificar que todos los malls existan utilizando una consulta de conteo
-    const foundMallsCount = await db.malls.count({
-      where: {
-        id: malls,
-      },
-      transaction: t,
-    });
-
-    if (foundMallsCount !== malls.length) {
-      throw new AppError("One or more malls not found", 404);
-    }
-
-    // Eliminar asignaciones de malls existentes
-    await db.mall_user.destroy({
-      where: {
-        user_id: userId,
-      },
-      transaction: t,
-    });
-
-    // Crear nuevas asociaciones
-    const newAssociations = malls.map((mallId: number) => ({
-      user_id: userId,
-      mall_id: mallId,
-    }));
-
-    // Asignar nuevos malls al usuario
-    await db.mall_user.bulkCreate(newAssociations, { transaction: t });
+// Retrieve a user by ID
+const getUserById = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const user = await db.users.findByPk(id, {
+    attributes: { exclude: ["password", "deletedAt"] },
   });
-
-  // Responder con éxito
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
   return res.status(200).json({
     status: "success",
-    message: "Malls assigned to user successfully",
+    data: user,
   });
 });
 
-module.exports = { getAllUser, assignMallsToUser };
+
+// Update a user by ID
+const updateUser = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { userType, email, commerceName, password, confirmPassword } = req.body;
+
+  if (password && password !== confirmPassword) {
+    throw new AppError("Passwords do not match", 400);
+  }
+
+  const user = await db.users.findByPk(id);
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  const updatedUser = await user.update({
+    userType,
+    email,
+    commerceName,
+    password: password ? password : user.password,
+  });
+
+  return res.status(200).json({
+    status: "success",
+    data: updatedUser,
+  });
+});
+
+// Delete a user by ID
+const deleteUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const user = await db.users.findByPk(id);
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+
+
+    await user.update({
+      status: false,
+    });
+    await user.destroy();
+
+    return res.status(204).json({
+      status: "success",
+      message: "Usuario eliminado exitosamente",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Error al eliminar usuario",
+    });
+  }
+};
+
+module.exports = {
+  getAllUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+  // assignMallsToUser, // existing function
+};

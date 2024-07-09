@@ -1,9 +1,9 @@
 import "dotenv/config"
 import express, { NextFunction, Request } from "express";
 import cors from "cors"
-const catchAsync = require('./utils/catchAsync');
+import catchAsync from '../src/utils/catchAsync';
 require("dotenv").config({ path: `${process.cwd()}/.env` });
-const AppError = require("./utils/appError");
+import AppError from "../src/utils/appError";
 
 // ROUTER
 const authRouter = require("./routes/authRoute");

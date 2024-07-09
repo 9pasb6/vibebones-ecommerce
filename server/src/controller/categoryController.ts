@@ -4,10 +4,10 @@ import { NextFunction, Request, Response } from 'express';
 const db = require("../db/models/index");
 
 // Utilities
-const catchAsync = require("../utils/catchAsync");
+import catchAsync from '../utils/catchAsync';
 
 // Error Handling
-const AppError = require("../utils/appError");
+import AppError from "../utils/appError";
 
 // External Libraries
 const sequelize = require("../config/database");

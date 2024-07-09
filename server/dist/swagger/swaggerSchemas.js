@@ -70,29 +70,11 @@ const schemas = {
             },
             accessToken: {
                 type: "string",
-                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Mywicm9sZSI6IkNPTU1FUkNFIiwidXNlcm5hbWUiOiJDb21tZXJjZSBOYW1lIiwiaWF0IjoxNzE3NDU5NDg2LCJleHAiOjE3MTc1NDU4ODZ9.UHzckLZT0Tmg_cNXvRI_NOqp-T6Fcx2OmwKOdx4DU08",
+                example: "new.jwt.token.here",
             },
             refreshToken: {
                 type: "string",
-                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Mywicm9sZSI6IkNPTU1FUkNFIiwidXNlcm5hbWUiOiJDb21tZXJjZSBOYW1lIiwiaWF0IjoxNzE3NDU5NDg2LCJleHAiOjE3MTgwNjQyODZ9.RblDbMRUHjZY2t_OT6OrpRgh2I1sm4Yni_aaIiB9fUE",
-            },
-        },
-    },
-    AccessTokenResponseSchema: {
-        type: "object",
-        properties: {
-            status: {
-                type: "string",
-                example: "success",
-            },
-            data: {
-                type: "object",
-                properties: {
-                    token: {
-                        type: "string",
-                        example: "new.jwt.token.here",
-                    },
-                },
+                example: "new.refresh.token.here",
             },
         },
     },
@@ -134,134 +116,49 @@ const schemas = {
             },
         },
     },
-    AdsStatsResponseSchema: {
+    CategoryCreationSchema: {
+        type: "object",
+        required: [
+            "name",
+            "description"
+        ],
+        properties: {
+            name: {
+                type: "string",
+                example: "Category Name"
+            },
+            description: {
+                type: "string",
+                example: "Category Description"
+            }
+        }
+    },
+    CategoryResponseSchema: {
         type: "object",
         properties: {
             status: {
                 type: "string",
-                example: "success",
+                example: "success"
             },
             message: {
                 type: "string",
-                example: "Estadísticas recuperadas con éxito",
-            },
-            stats: {
-                type: "object",
-                properties: {
-                    totalInteractions: {
-                        type: "integer",
-                        example: 100,
-                    },
-                    mostCommonExpression: {
-                        type: "string",
-                        example: "Happy",
-                    },
-                    interactionsByAd: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                id: {
-                                    type: "integer",
-                                    example: 1,
-                                },
-                                title: {
-                                    type: "string",
-                                    example: "Ad Title",
-                                },
-                                count: {
-                                    type: "integer",
-                                    example: 20,
-                                },
-                            },
-                        },
-                    },
-                    genderDistribution: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                name: {
-                                    type: "string",
-                                    example: "Male",
-                                },
-                                total: {
-                                    type: "number",
-                                    example: 60.5,
-                                },
-                            },
-                        },
-                    },
-                    totalAds: {
-                        type: "integer",
-                        example: 5,
-                    },
-                },
-            },
-        },
-    },
-    FileUploadRequestSchema: {
-        type: "object",
-        required: ["files"],
-        properties: {
-            files: {
-                type: "array",
-                items: {
-                    type: "object",
-                    properties: {
-                        fileName: { type: "string" },
-                        url: { type: "string" },
-                        width: { type: "integer" },
-                        height: { type: "integer" },
-                        size: { type: "integer" },
-                        resourceType: { type: "string" },
-                    },
-                },
-            },
-        },
-    },
-    FileDeleteRequestSchema: {
-        type: "object",
-        required: ["userId", "fileId"],
-        properties: {
-            userId: { type: "integer" },
-            fileId: { type: "integer" },
-        },
-    },
-    AdCreationRequestSchema: {
-        type: "object",
-        required: ["title", "userId"],
-        properties: {
-            title: { type: "string" },
-            userId: { type: "integer" },
-        },
-    },
-    AdPartialUpdateRequestSchema: {
-        type: "object",
-        properties: {
-            title: { type: "string" },
-            description: { type: "string" },
-        },
-    },
-    AdFaceExpressionsUpdateRequestSchema: {
-        type: "object",
-        required: ["facialExpressions"],
-        properties: {
-            facialExpressions: {
-                type: "array",
-                items: {
-                    type: "string",
-                },
-            },
-        },
-    },
-    AdGenderUpdateRequestSchema: {
-        type: "object",
-        required: ["genderId"],
-        properties: {
-            genderId: { type: "string" }
+                example: "Category created successfully"
+            }
         }
     },
+    AuthErrorResponseSchema: {
+        type: "object",
+        properties: {
+            status: {
+                type: "string",
+                example: "error"
+            },
+            message: {
+                type: "string",
+                example: "Authentication failed"
+            }
+        }
+    }
 };
 module.exports = schemas;
 //# sourceMappingURL=swaggerSchemas.js.map

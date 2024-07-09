@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 module.exports = (db) => {
-    console.log("Verificando modelos disponibles...");
-    console.log("Modelos disponibles:", Object.keys(db));
-    // Definición de las asociaciones (relaciones)
+    console.log("Checking available models...");
+    console.log("Available models:", Object.keys(db));
+    // Definition of associations (relationships)
     db.users.hasMany(db.carts, { foreignKey: "user_id" });
     db.carts.belongsTo(db.users, { foreignKey: "user_id" });
     db.users.hasMany(db.purchases, { foreignKey: "user_id" });
@@ -28,6 +28,6 @@ module.exports = (db) => {
     db.product_category.belongsTo(db.products, { foreignKey: "product_id" });
     db.categories.hasMany(db.product_category, { foreignKey: "category_id" });
     db.product_category.belongsTo(db.categories, { foreignKey: "category_id" });
-    console.log("Asociaciones establecidas correctamente.");
+    console.log("Associations successfully established.");
 };
 //# sourceMappingURL=associations.js.map

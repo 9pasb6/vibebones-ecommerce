@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const router = express.Router();
-const { signup, login, refresh, profile, authentication, } = require("../controller/authController");
+const { signup, login, refresh, profile, authentication, recoverPassword, } = require("../controller/authController");
 /**
  * @swagger
  * /api/v1/auth/signup:
@@ -85,5 +85,30 @@ router.route("/refresh").post(refresh);
  *         description: Unauthorized
  */
 router.get("/profile", authentication, profile);
+/**
+ * @swagger
+ * /api/v1/auth/recover-password:
+ *   post:
+ *     summary: Recover password
+ *     tags: [Auth]
+ *     description: Send a password recovery email to the user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The email of the user
+ *                 example: user@example.com
+ *     responses:
+ *       200:
+ *         description: Password recovery email sent
+ *       404:
+ *         description: User not found
+ */
+router.route('/recover-password').post(recoverPassword);
 module.exports = router;
 //# sourceMappingURL=authRoute.js.map

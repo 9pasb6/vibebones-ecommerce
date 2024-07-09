@@ -70,24 +70,6 @@ declare const schemas: {
             };
         };
     };
-    AccessTokenResponseSchema: {
-        type: string;
-        properties: {
-            status: {
-                type: string;
-                example: string;
-            };
-            data: {
-                type: string;
-                properties: {
-                    token: {
-                        type: string;
-                        example: string;
-                    };
-                };
-            };
-        };
-    };
     UserProfileResponseSchema: {
         type: string;
         properties: {
@@ -126,7 +108,21 @@ declare const schemas: {
             };
         };
     };
-    AdsStatsResponseSchema: {
+    CategoryCreationSchema: {
+        type: string;
+        required: string[];
+        properties: {
+            name: {
+                type: string;
+                example: string;
+            };
+            description: {
+                type: string;
+                example: string;
+            };
+        };
+    };
+    CategoryResponseSchema: {
         type: string;
         properties: {
             status: {
@@ -137,146 +133,18 @@ declare const schemas: {
                 type: string;
                 example: string;
             };
-            stats: {
-                type: string;
-                properties: {
-                    totalInteractions: {
-                        type: string;
-                        example: number;
-                    };
-                    mostCommonExpression: {
-                        type: string;
-                        example: string;
-                    };
-                    interactionsByAd: {
-                        type: string;
-                        items: {
-                            type: string;
-                            properties: {
-                                id: {
-                                    type: string;
-                                    example: number;
-                                };
-                                title: {
-                                    type: string;
-                                    example: string;
-                                };
-                                count: {
-                                    type: string;
-                                    example: number;
-                                };
-                            };
-                        };
-                    };
-                    genderDistribution: {
-                        type: string;
-                        items: {
-                            type: string;
-                            properties: {
-                                name: {
-                                    type: string;
-                                    example: string;
-                                };
-                                total: {
-                                    type: string;
-                                    example: number;
-                                };
-                            };
-                        };
-                    };
-                    totalAds: {
-                        type: string;
-                        example: number;
-                    };
-                };
-            };
         };
     };
-    FileUploadRequestSchema: {
-        type: string;
-        required: string[];
-        properties: {
-            files: {
-                type: string;
-                items: {
-                    type: string;
-                    properties: {
-                        fileName: {
-                            type: string;
-                        };
-                        url: {
-                            type: string;
-                        };
-                        width: {
-                            type: string;
-                        };
-                        height: {
-                            type: string;
-                        };
-                        size: {
-                            type: string;
-                        };
-                        resourceType: {
-                            type: string;
-                        };
-                    };
-                };
-            };
-        };
-    };
-    FileDeleteRequestSchema: {
-        type: string;
-        required: string[];
-        properties: {
-            userId: {
-                type: string;
-            };
-            fileId: {
-                type: string;
-            };
-        };
-    };
-    AdCreationRequestSchema: {
-        type: string;
-        required: string[];
-        properties: {
-            title: {
-                type: string;
-            };
-            userId: {
-                type: string;
-            };
-        };
-    };
-    AdPartialUpdateRequestSchema: {
+    AuthErrorResponseSchema: {
         type: string;
         properties: {
-            title: {
+            status: {
                 type: string;
+                example: string;
             };
-            description: {
+            message: {
                 type: string;
-            };
-        };
-    };
-    AdFaceExpressionsUpdateRequestSchema: {
-        type: string;
-        required: string[];
-        properties: {
-            facialExpressions: {
-                type: string;
-                items: {
-                    type: string;
-                };
-            };
-        };
-    };
-    AdGenderUpdateRequestSchema: {
-        type: string;
-        required: string[];
-        properties: {
-            genderId: {
-                type: string;
+                example: string;
             };
         };
     };

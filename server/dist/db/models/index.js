@@ -37,7 +37,7 @@ fs_1.default.readdirSync(__dirname)
         console.error(`Error al cargar el modelo desde el archivo: ${file}`);
     }
 });
-console.log("Modelos cargados correctamente:", (db));
+// console.log("Modelos cargados correctamente:", (db));
 // Import associations
 require("../associations")(db);
 Object.keys(db).forEach((modelName) => {

@@ -2,9 +2,51 @@ import { NextFunction, Request, Response } from 'express';
 const jwt = require ('jsonwebtoken');
 const bcrypt = require ('bcrypt');
 const db = require('../db/models/index');
-const catchAsync = require('../utils/catchAsync');
-const AppError = require('../utils/appError') ;
+import catchAsync from '../utils/catchAsync';
+import AppError from "../utils/appError";
+import { emailRecoverPassword } from '../utils/emailProvider';
 
+
+/**
+ * Función para recuperar la contraseña
+ */
+export const recoverPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const { email } = req.body;
+
+  // Verificar si el usuario existe
+  const user = await db.users.findOne({ where: { email } });
+  if (!user) {
+    const error = new Error("El usuario no existe, por favor crea una cuenta");
+    return res.status(404).json({ msg: error.message });
+  }
+
+  try {
+
+    const payload = {
+      id: user.id,
+      role: user.userType,
+      username: user.commerceName,
+    };
+    // // Generar un token de recuperación
+    // user.token = generateJWT();
+    // await user.save();
+
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+
+    // Enviar email de recuperación de contraseña
+    emailRecoverPassword(user);
+
+    res.json({ 
+      msg: "Ahora, revisa tu correo electrónico" ,
+      accessToken: accessToken,
+      refreshToken: refreshToken
+        });
+  } catch (error) {
+    console.log(error);
+    return next(new AppError('Error al recuperar la contraseña, por favor intente nuevamente', 500));
+  }
+});
 
 /**
  * Función de registro que maneja la creación de nuevos usuarios
@@ -14,62 +56,56 @@ export const signup = catchAsync(async (req: any, res: Response, next: NextFunct
   console.log(req.body)
   const { userType, email, commerceName, password, confirmPassword, status } = req.body;
 
-  // Validaciones básicas
-  if (!userType || !email || !commerceName || !password || !confirmPassword || !status) {
-    throw new AppError('Todos los campos son obligatorios', 400);
-  }
-
-  if (userType !== 'LOCATION') {
-    console.log(db.users)
+  
+  if (userType !== 'USER') {
+    
     throw new AppError('Tipo de usuario no válido', 400);
     
   }
 
-  if (password !== confirmPassword) {
-    throw new AppError('Las contraseñas no coinciden', 400);
-  }
+  try {
+    // Verificar si el correo electrónico ya está en uso (activo o eliminado)
+    const existingUser = await db.users.findOne({
+      where: {
+        email,
+      },
+      paranoid: false, // incluir registros eliminados
+    });
 
- 
-  // Verificar si el usuario ya existe por email o nombre de comercio
-  const commerceExists = await db.users.findOne({
-    where: {
-      commerceName,
-    },
-  });
+    //el usuario existe y esta activo
+    if (existingUser && existingUser.status === true) {
+      return res.status(400).json({
+        message: "El correo electrónico ya está registrado",
+      });
+    }
 
-   
+    //el usuario existe y pero esta inactivo
+    if (existingUser && existingUser.status !== true) {
+      return res.status(400).json({
+        message: "El correo electrónico ya ha sido registrado, desea reactivar su cuenta?",
+      });
+    }
 
-  if (commerceExists) {
-    throw new AppError('El nombre del comercio ya está registrado', 400);
-  }
-
-  const userExists = await db.users.findOne({
-    where: {
+    // Crear nuevo usuario
+    const newUser = await db.users.create({
+      userType,
       email,
-    },
-  });
+      commerceName,
+      password: await bcrypt.hash(password, 12),
+      status,
+    });
 
-  if (userExists) {
-    throw new AppError('El correo electrónico ya está registrado', 400);
+    return res.status(201).json({
+      status: "success",
+      message: "Usuario creado exitosamente",
+      data: newUser,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Error al crear usuario",
+    });
   }
-
-  // Crear nuevo usuario
-  const newUser = await db.users.create({
-    userType,
-    email,
-    commerceName,
-    password: await bcrypt.hash(password, 12),
-    status
-  });
-
-  if (!newUser) {
-    throw new AppError('Error al crear un nuevo usuario', 400);
-  }
-
-  return res.status(201).json({
-    status: 'success',
-    message: 'Usuario creado con éxito',
-  });
 });
 
 /**
@@ -83,7 +119,7 @@ export const login = catchAsync(async (req: any, res: Response, next: NextFuncti
   }
 
   const user = await db.users.findOne({ where: { email } });
-  if (!user || !(await bcrypt.compare(password, user.password))) {
+  if (!user || !(await bcrypt.compare(password, user.password))) { //TODO: recuperar cuenta
     throw new AppError('Correo electrónico o contraseña no válidos', 401);
   }
 
@@ -102,6 +138,9 @@ export const login = catchAsync(async (req: any, res: Response, next: NextFuncti
     refreshToken: refreshToken,
   });
 });
+
+
+
 
 /**
  * Función de refresco que maneja la generación de nuevos tokens de acceso
