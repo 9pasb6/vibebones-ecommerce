@@ -19,6 +19,10 @@ Cart.init({
             key: 'id',
         },
     },
+    status: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+    },
     createdAt: {
         type: DataTypes.DATE,
         allowNull: false,

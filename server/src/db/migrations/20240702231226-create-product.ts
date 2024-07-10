@@ -43,12 +43,11 @@ module.exports = {
         onDelete: 'CASCADE',
       },
       date: {
-        type: DataTypes.STRING,
+        type: DataTypes.DATE,
         allowNull: false,
       },
       status: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
+        type: DataTypes.BOOLEAN
       },
     });
   },

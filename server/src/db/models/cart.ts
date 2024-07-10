@@ -9,18 +9,20 @@ const  sequelize  = require('../../config/database');
 interface CartAttributes {
     id: number;
     user_id: number;
+    status: boolean;
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date | null;
   }
-
-
+  
+  
   // These are the attributes that are allowed to be set when creating a new Ad instance
-interface CartCreationAttributes extends Optional<CartAttributes, 'id'> {}
-
-class Cart extends Model<CartAttributes, CartCreationAttributes> implements CartAttributes {
+  interface CartCreationAttributes extends Optional<CartAttributes, 'id'> {}
+  
+  class Cart extends Model<CartAttributes, CartCreationAttributes> implements CartAttributes {
     public id!: number;
     public user_id!: number;
+    public status!: boolean;
     public createdAt!: Date;
     public updatedAt!: Date;
     public deletedAt?: Date | null;
@@ -42,6 +44,10 @@ Cart.init(
           model: 'users',
           key: 'id',
         },
+      },
+      status: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
       },
       createdAt: {
         type: DataTypes.DATE,

@@ -14,13 +14,12 @@ const getProductById = catchAsync(async (req: Request, res: Response, next: Next
   const product = await db.products.findByPk(productId, {
     include: [
       {
-        model: db.categories,
-        as: 'categories',
+        model: db.categories
       },
-      {
-        model: db.inventories,
-        attributes: ['quantity', 'location'],
-      },
+      // {
+      //   model: db.inventories,
+      //   attributes: ['quantity', 'location'],
+      // },
     ],
   });
 
@@ -39,31 +38,37 @@ const getProductById = catchAsync(async (req: Request, res: Response, next: Next
  * Crea un nuevo producto.
  */
 const createProduct = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { title, description, price, stock, tax, category_id, date, status } = req.body;
+  const { title, description, price, stock, tax, category_id } = req.body;
 
-  if (!title || !price || !category_id || !date || !status) {
+  if (!title || !price || !category_id ) {
     throw new AppError('El título, precio, ID de categoría, fecha y estado son obligatorios', 400);
   }
 
-  const product = await db.products.create({
-    title,
-    description,
-    price,
-    stock,
-    tax,
-    category_id,
-    date,
-    status,
-  });
-
-  if (!product) {
-    throw new AppError('Error al crear el producto', 400);
+  try {
+    const product = await db.products.create({
+      title,
+      description,
+      price,
+      stock,
+      tax,
+      category_id
+     
+    });
+  
+    if (!product) {
+      throw new AppError('Error al crear el producto', 400);
+    }
+  
+    res.status(201).json({
+      message: 'Producto creado con éxito',
+      product,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Error al crear el producto",
+    });
   }
-
-  res.status(201).json({
-    message: 'Producto creado con éxito',
-    product,
-  });
 });
 
 // ----------------------------------------------
@@ -107,19 +112,28 @@ const updateProduct = catchAsync(async (req: Request, res: Response, next: NextF
  * Elimina un producto existente.
  */
 const deleteProduct = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const productId = req.params.id;
+  const { id } = req.params;
 
-  const product = await db.products.findByPk(productId);
+  try {
+    const product = await db.products.findByPk(id);
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    }
 
-  if (!product) {
-    throw new AppError('Producto no encontrado', 404);
+    await product.destroy();
+
+    return res.status(200).json({
+      status: "success",
+      message: "Producto eliminado exitosamente",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Error al eliminar el producto",
+    });
   }
-
-  await product.destroy();
-
-  res.status(204).json({
-    message: 'Producto eliminado con éxito',
-  });
 });
 
 // ----------------------------------------------

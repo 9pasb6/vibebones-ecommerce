@@ -44,7 +44,7 @@ module.exports = {
                 price_quantity: {
                     type: sequelize_1.DataTypes.INTEGER,
                     allowNull: false,
-                },
+                }
             });
         });
     },

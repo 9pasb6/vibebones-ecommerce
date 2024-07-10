@@ -22,6 +22,9 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
+      status:{
+        type: DataTypes.BOOLEAN,
+      },
       createdAt: {
         allowNull: false,
         type: DataTypes.DATE,

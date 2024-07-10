@@ -60,49 +60,49 @@ exports.recoverPassword = (0, catchAsync_1.default)((req, res, next) => __awaite
 exports.signup = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(req.body);
     const { userType, email, commerceName, password, confirmPassword, status } = req.body;
-    // Validaciones básicas
-    if (!userType || !email || !commerceName || !password || !confirmPassword || !status) {
-        throw new appError_1.default('Todos los campos son obligatorios', 400);
-    }
     if (userType !== 'USER') {
-        console.log(db.users);
         throw new appError_1.default('Tipo de usuario no válido', 400);
     }
-    if (password !== confirmPassword) {
-        throw new appError_1.default('Las contraseñas no coinciden', 400);
-    }
-    // Verificar si el usuario ya existe por email o nombre de comercio
-    const commerceExists = yield db.users.findOne({
-        where: {
-            commerceName,
-        },
-    });
-    if (commerceExists) {
-        throw new appError_1.default('El nombre del comercio ya está registrado', 400);
-    }
-    const userExists = yield db.users.findOne({
-        where: {
+    try {
+        // Verificar si el correo electrónico ya está en uso (activo o eliminado)
+        const existingUser = yield db.users.findOne({
+            where: {
+                email,
+            },
+            paranoid: false, // incluir registros eliminados
+        });
+        //el usuario existe y esta activo
+        if (existingUser && existingUser.status === true) {
+            return res.status(400).json({
+                message: "El correo electrónico ya está registrado",
+            });
+        }
+        //el usuario existe y pero esta inactivo
+        if (existingUser && existingUser.status !== true) {
+            return res.status(400).json({
+                message: "El correo electrónico ya ha sido registrado, desea reactivar su cuenta?",
+            });
+        }
+        // Crear nuevo usuario
+        const newUser = yield db.users.create({
+            userType,
             email,
-        },
-    });
-    if (userExists) {
-        throw new appError_1.default('El correo electrónico ya está registrado', 400);
+            commerceName,
+            password: yield bcrypt.hash(password, 12),
+            status,
+        });
+        return res.status(201).json({
+            status: "success",
+            message: "Usuario creado exitosamente",
+            data: newUser,
+        });
     }
-    // Crear nuevo usuario
-    const newUser = yield db.users.create({
-        userType,
-        email,
-        commerceName,
-        password: yield bcrypt.hash(password, 12),
-        status
-    });
-    if (!newUser) {
-        throw new appError_1.default('Error al crear un nuevo usuario', 400);
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Error al crear usuario",
+        });
     }
-    return res.status(201).json({
-        status: 'success',
-        message: 'Usuario creado con éxito',
-    });
 }));
 /**
  * Función de inicio de sesión que maneja la autenticación de usuarios
@@ -113,7 +113,7 @@ exports.login = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, 
         throw new appError_1.default('El correo electrónico y la contraseña son obligatorios', 400);
     }
     const user = yield db.users.findOne({ where: { email } });
-    if (!user || !(yield bcrypt.compare(password, user.password))) {
+    if (!user || !(yield bcrypt.compare(password, user.password))) { //TODO: recuperar cuenta
         throw new appError_1.default('Correo electrónico o contraseña no válidos', 401);
     }
     const payload = {

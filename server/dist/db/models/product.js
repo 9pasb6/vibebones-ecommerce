@@ -40,12 +40,13 @@ Product.init({
         },
     },
     date: {
-        type: DataTypes.STRING,
+        type: DataTypes.DATE,
         allowNull: false,
+        defaultValue: DataTypes.NOW,
     },
     status: {
         type: DataTypes.BOOLEAN,
-        allowNull: false,
+        defaultValue: true,
     },
 }, {
     sequelize,

@@ -54,43 +54,56 @@ const getUserById = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
 // Update a user by ID
 const updateUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const { userType, email, commerceName, password, confirmPassword } = req.body;
+    const { userType, commerceName, password, confirmPassword } = req.body;
     if (password && password !== confirmPassword) {
         throw new appError_1.default("Passwords do not match", 400);
     }
     const user = yield db.users.findByPk(id);
     if (!user) {
-        throw new appError_1.default("User not found", 404);
-    }
-    const updatedUser = yield user.update({
-        userType,
-        email,
-        commerceName,
-        password: password ? password : user.password,
-    });
-    return res.status(200).json({
-        status: "success",
-        data: updatedUser,
-    });
-}));
-// Delete a user by ID
-const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
-    const user = yield db.users.findByPk(id);
-    if (!user) {
-        return res.status(404).json({
-            message: "User not found",
-        });
+        throw new appError_1.default("User not found to update", 404);
     }
     try {
-        yield user.destroy({ where: { id: id } });
-        return res.status(204).json({
+        const updatedUser = yield user.update({
+            userType,
+            commerceName,
+            password: password ? password : user.password,
+        });
+        return res.status(200).json({
             status: "success",
-            message: "usuario eliminado con exito",
+            data: updatedUser,
         });
     }
     catch (error) {
         console.log(error);
+        return res.status(500).json({
+            message: "Error al actualizar al usuario",
+        });
+    }
+}));
+// Delete a user by ID
+const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    try {
+        const user = yield db.users.findByPk(id);
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+        yield user.update({
+            status: false,
+        });
+        yield user.destroy();
+        return res.status(200).json({
+            status: "success",
+            message: "Usuario eliminado exitosamente",
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Error al eliminar usuario",
+        });
     }
 });
 module.exports = {

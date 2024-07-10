@@ -25,13 +25,12 @@ const getProductById = (0, catchAsync_1.default)((req, res, next) => __awaiter(v
     const product = yield index_1.default.products.findByPk(productId, {
         include: [
             {
-                model: index_1.default.categories,
-                as: 'categories',
+                model: index_1.default.categories
             },
-            {
-                model: index_1.default.inventories,
-                attributes: ['quantity', 'location'],
-            },
+            // {
+            //   model: db.inventories,
+            //   attributes: ['quantity', 'location'],
+            // },
         ],
     });
     if (!product) {
@@ -48,27 +47,33 @@ exports.getProductById = getProductById;
  * Crea un nuevo producto.
  */
 const createProduct = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { title, description, price, stock, tax, category_id, date, status } = req.body;
-    if (!title || !price || !category_id || !date || !status) {
+    const { title, description, price, stock, tax, category_id } = req.body;
+    if (!title || !price || !category_id) {
         throw new appError_1.default('El título, precio, ID de categoría, fecha y estado son obligatorios', 400);
     }
-    const product = yield index_1.default.products.create({
-        title,
-        description,
-        price,
-        stock,
-        tax,
-        category_id,
-        date,
-        status,
-    });
-    if (!product) {
-        throw new appError_1.default('Error al crear el producto', 400);
+    try {
+        const product = yield index_1.default.products.create({
+            title,
+            description,
+            price,
+            stock,
+            tax,
+            category_id
+        });
+        if (!product) {
+            throw new appError_1.default('Error al crear el producto', 400);
+        }
+        res.status(201).json({
+            message: 'Producto creado con éxito',
+            product,
+        });
     }
-    res.status(201).json({
-        message: 'Producto creado con éxito',
-        product,
-    });
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Error al crear el producto",
+        });
+    }
 }));
 exports.createProduct = createProduct;
 // ----------------------------------------------
@@ -106,15 +111,26 @@ exports.updateProduct = updateProduct;
  * Elimina un producto existente.
  */
 const deleteProduct = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const productId = req.params.id;
-    const product = yield index_1.default.products.findByPk(productId);
-    if (!product) {
-        throw new appError_1.default('Producto no encontrado', 404);
+    const { id } = req.params;
+    try {
+        const product = yield index_1.default.products.findByPk(id);
+        if (!product) {
+            return res.status(404).json({
+                message: "Product not found",
+            });
+        }
+        yield product.destroy();
+        return res.status(200).json({
+            status: "success",
+            message: "Producto eliminado exitosamente",
+        });
     }
-    yield product.destroy();
-    res.status(204).json({
-        message: 'Producto eliminado con éxito',
-    });
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Error al eliminar el producto",
+        });
+    }
 }));
 exports.deleteProduct = deleteProduct;
 // ----------------------------------------------

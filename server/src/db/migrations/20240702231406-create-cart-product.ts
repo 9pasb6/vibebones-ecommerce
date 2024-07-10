@@ -35,7 +35,7 @@ module.exports = {
       price_quantity: {
         type: DataTypes.INTEGER,
         allowNull: false,
-      },
+      }
     });
   },
 

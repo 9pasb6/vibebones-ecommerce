@@ -8,9 +8,8 @@ module.exports = {
     await queryInterface.createTable('purchases', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
       },
       user_id: {
         type: DataTypes.INTEGER,
@@ -32,24 +31,12 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      quantity: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      price_quantity: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      total_quantity: {
-        type: DataTypes.INTEGER,
+      date: {
+        type: DataTypes.DATE,
         allowNull: false,
       },
       total: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      date: {
-        type: DataTypes.STRING,
+        type: DataTypes.DECIMAL,
         allowNull: false,
       },
     });

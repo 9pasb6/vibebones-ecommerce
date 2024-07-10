@@ -5,6 +5,8 @@ const {
   createCart,
   updateCart,
   deleteCart,
+  addProductToCart,
+  deleteProductFromCart,
 } = require("../controller/cartController");
 
 const router = require("express").Router();
@@ -184,5 +186,76 @@ router.route("/:id").patch(authentication, restrictTo("ADMIN", "USER", "LOCATION
  *         description: Cart not found
  */
 router.route("/:id").delete(authentication, restrictTo("ADMIN"), deleteCart); // only admin can access
+
+/**
+ * @swagger
+ * /api/v1/carts/{id}/products:
+ *   post:
+ *     summary: Add a product to the cart
+ *     tags: [Cart]
+ *     security:
+ *       - BearerAuth: []
+ *     description: Both admin and commerce can access this endpoint
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CartProductSchema'
+ *     responses:
+ *       201:
+ *         description: Product added to cart successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "success"
+ *                 data:
+ *                   $ref: '#/components/schemas/CartProduct'
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ */
+router.route("/product").post(authentication, restrictTo("ADMIN", "USER", "LOCATION"), addProductToCart); // both admin and commerce can access
+
+
+/**
+ * @swagger
+ * /api/v1/carts/{userId}/products/{productId}:
+ *   delete:
+ *     summary: Remove a product from the cart
+ *     tags: [Cart]
+ *     security:
+ *       - BearerAuth: []
+ *     description: Remove a product from the user's cart
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: ID of the user's cart
+ *       - in: path
+ *         name: productId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 101
+ *         description: ID of the product to remove from the cart
+ *     responses:
+ *       204:
+ *         description: Product removed from cart successfully
+ *       404:
+ *         description: Cart or product not found
+ *       500:
+ *         description: Internal server error
+ */
+router.delete("/:userId/products/:productId", authentication, restrictTo("ADMIN", "USER", "LOCATION"), deleteProductFromCart);
+
 
 module.exports = router;

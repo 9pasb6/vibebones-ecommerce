@@ -4,36 +4,29 @@ const sequelize = require('../../config/database');
 
 // Interfaces
 interface PurchaseAttributes {
-  id: number;
+  id: string;
   user_id: number;
   cart_id: number;
-  quantity: number;
-  price_quantity: number;
-  total_quantity: number;
-  total: number;
-  date: string;
+  date: Date;
+  total: number
 }
 
 interface PurchaseCreationAttributes extends Optional<PurchaseAttributes, 'id'> {}
 
 class Purchase extends Model<PurchaseAttributes, PurchaseCreationAttributes> implements PurchaseAttributes {
-  public id!: number;
+  public id!: string;
   public user_id!: number;
   public cart_id!: number;
-  public quantity!: number;
-  public price_quantity!: number;
-  public total_quantity!: number;
+  public date!: Date;
   public total!: number;
-  public date!: string;
 }
 
 Purchase.init(
   {
     id: {
       allowNull: false,
-      autoIncrement: true,
       primaryKey: true,
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
     },
     user_id: {
       type: DataTypes.INTEGER,
@@ -51,35 +44,24 @@ Purchase.init(
         key: 'id',
       },
     },
-    quantity: {
-      type: DataTypes.INTEGER,
+    date: {
+      type: DataTypes.DATE,
       allowNull: false,
-    },
-    price_quantity: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    total_quantity: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
     total: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DECIMAL,
       allowNull: false,
-    },
-    date: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
+     },
   },
   {
     sequelize,
     paranoid: false,
     timestamps: false,
-    modelName: 'purchases', // Ajusta el nombre del modelo según tu preferencia
+    modelName: 'purchases', 
     freezeTableName: true,
   }
 );
 
-export default Purchase ;
+export default Purchase;
 export type { PurchaseAttributes, PurchaseCreationAttributes };

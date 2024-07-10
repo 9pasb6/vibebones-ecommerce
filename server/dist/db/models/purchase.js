@@ -7,9 +7,8 @@ class Purchase extends Model {
 Purchase.init({
     id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
     },
     user_id: {
         type: DataTypes.INTEGER,
@@ -27,31 +26,20 @@ Purchase.init({
             key: 'id',
         },
     },
-    quantity: {
-        type: DataTypes.INTEGER,
+    date: {
+        type: DataTypes.DATE,
         allowNull: false,
-    },
-    price_quantity: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
-    total_quantity: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
+        defaultValue: DataTypes.NOW,
     },
     total: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
-    date: {
-        type: DataTypes.STRING,
+        type: DataTypes.DECIMAL,
         allowNull: false,
     },
 }, {
     sequelize,
     paranoid: false,
     timestamps: false,
-    modelName: 'purchases', // Ajusta el nombre del modelo según tu preferencia
+    modelName: 'purchases',
     freezeTableName: true,
 });
 exports.default = Purchase;

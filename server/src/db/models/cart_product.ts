@@ -11,16 +11,18 @@ interface CartProductAttributes {
     cart_id: number;
     quantity: number;
     price_quantity: number;
+    
   }
-
-  interface CartProductCreationAttributes extends CartProductAttributes {}
-
   
-class CartProduct extends Model<CartProductAttributes, CartProductCreationAttributes> implements CartProductAttributes {
+  interface CartProductCreationAttributes extends CartProductAttributes {}
+  
+  
+  class CartProduct extends Model<CartProductAttributes, CartProductCreationAttributes> implements CartProductAttributes {
     product_id!: number;
     cart_id!: number;
     quantity!: number;
     price_quantity!: number;
+    
   }
 
   CartProduct.init(

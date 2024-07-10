@@ -17,9 +17,8 @@ module.exports = {
             yield queryInterface.createTable('purchases', {
                 id: {
                     allowNull: false,
-                    autoIncrement: true,
                     primaryKey: true,
-                    type: sequelize_1.DataTypes.INTEGER,
+                    type: sequelize_1.DataTypes.STRING,
                 },
                 user_id: {
                     type: sequelize_1.DataTypes.INTEGER,
@@ -41,24 +40,12 @@ module.exports = {
                     onUpdate: 'CASCADE',
                     onDelete: 'CASCADE',
                 },
-                quantity: {
-                    type: sequelize_1.DataTypes.INTEGER,
-                    allowNull: false,
-                },
-                price_quantity: {
-                    type: sequelize_1.DataTypes.INTEGER,
-                    allowNull: false,
-                },
-                total_quantity: {
-                    type: sequelize_1.DataTypes.INTEGER,
+                date: {
+                    type: sequelize_1.DataTypes.DATE,
                     allowNull: false,
                 },
                 total: {
-                    type: sequelize_1.DataTypes.INTEGER,
-                    allowNull: false,
-                },
-                date: {
-                    type: sequelize_1.DataTypes.STRING,
+                    type: sequelize_1.DataTypes.DECIMAL,
                     allowNull: false,
                 },
             });

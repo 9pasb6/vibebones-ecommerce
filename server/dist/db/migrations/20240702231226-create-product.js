@@ -52,12 +52,11 @@ module.exports = {
                     onDelete: 'CASCADE',
                 },
                 date: {
-                    type: sequelize_1.DataTypes.STRING,
+                    type: sequelize_1.DataTypes.DATE,
                     allowNull: false,
                 },
                 status: {
-                    type: sequelize_1.DataTypes.BOOLEAN,
-                    allowNull: false,
+                    type: sequelize_1.DataTypes.BOOLEAN
                 },
             });
         });
