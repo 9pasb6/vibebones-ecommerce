@@ -1,0 +1,68 @@
+{{>navigation}}
+<!-- updateProduct.hbs -->
+<div class="container">
+  <h1 class="text-center">Actualizar Producto</h1>
+
+  <form id="update-product-form" action="/api/v1/products/{{product.id}}" method="PATCH">
+    <div class="mb-3">
+      <label for="title" class="form-label">Título</label>
+      <input type="text" class="form-control" id="title" name="title" value="{{product.title}}" required>
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Descripción</label>
+      <textarea class="form-control" id="description" name="description" rows="3" required>{{product.description}}</textarea>
+    </div>
+    <div class="mb-3">
+      <label for="price" class="form-label">Precio</label>
+      <input type="number" class="form-control" id="price" name="price" value="{{product.price}}" step="0.01" required>
+    </div>
+    <div class="mb-3">
+      <label for="stock" class="form-label">Stock</label>
+      <input type="number" class="form-control" id="stock" name="stock" value="{{product.stock}}" required>
+    </div>
+    <div class="mb-3">
+      <label for="tax" class="form-label">Impuesto</label>
+      <input type="number" class="form-control" id="tax" name="tax" value="{{product.tax}}" step="0.01">
+    </div>
+    <div class="mb-3">
+      <label for="category_id" class="form-label">ID de Categoría</label>
+      <input type="number" class="form-control" id="category_id" name="category_id" value="{{product.category_id}}" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Actualizar Producto</button>
+  </form>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const updateProductForm = document.getElementById('update-product-form');
+    const urlParts = window.location.pathname.split('/'); // Dividir la URL por '/'
+    const productId = urlParts[urlParts.length - 1]; // Obtener el último segmento de la URL, que debería ser el ID del producto
+
+    updateProductForm.addEventListener('submit', async (event) => {
+      event.preventDefault(); // Prevenir el comportamiento por defecto de envío del formulario
+
+      const formData = new FormData(updateProductForm);
+
+      try {
+        const response = await fetch(`/api/v1/products/${productId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(Object.fromEntries(formData.entries())),
+        });
+
+        const data = await response.json();
+
+        if (response.status === 200) {
+          console.log('Producto actualizado:', data.message);
+          window.location.href = '/api/v1/view'; // Redirigir a la página principal después de actualizar
+        } else {
+          console.error('Error al actualizar producto:', data.message);
+        }
+      } catch (error) {
+        console.error('Error al actualizar producto:', error.message);
+      }
+    });
+  });
+</script>

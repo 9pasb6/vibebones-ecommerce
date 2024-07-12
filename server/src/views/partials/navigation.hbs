@@ -1,0 +1,42 @@
+<!-- navigation.hbs -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/api/v1/view">VibeBones</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        {{#if (eq user.dataValues.userType 'ADMIN')}}
+          <li class="nav-item">
+            <a class="nav-link" href="/api/v1/view">Productos</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/products/create">Crear Producto</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/purchases">Listar Compras</a>
+          </li>
+          <li class="nav-item">
+            <form class="d-flex" action="/products/search" method="GET">
+              <input class="form-control me-2" type="search" placeholder="Buscar por ID" aria-label="Search" name="id">
+              <button class="btn btn-outline-success" type="submit">Buscar</button>
+            </form>
+          </li>
+        {{else if (eq user.dataValues.userType 'USER')}}
+          <li class="nav-item">
+            <a class="nav-link" href="/products">Todos los Productos</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/my-purchases">Mis Compras</a>
+          </li>
+        {{/if}}
+      </ul>
+      {{#if (eq user.dataValues.userType 'USER')}}
+        <a class="btn btn-primary" href="/cart">
+          <i class="fas fa-shopping-cart"></i> Carrito
+        </a>
+      {{/if}}
+    </div>
+  </div>
+</nav>

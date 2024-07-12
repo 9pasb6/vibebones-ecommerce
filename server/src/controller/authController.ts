@@ -5,6 +5,7 @@ const db = require('../db/models/index');
 import catchAsync from '../utils/catchAsync';
 import AppError from "../utils/appError";
 import { emailRecoverPassword } from '../utils/emailProvider';
+import { DB } from '../db/types';
 
 
 /**
@@ -111,16 +112,47 @@ export const signup = catchAsync(async (req: any, res: Response, next: NextFunct
 /**
  * Función de inicio de sesión que maneja la autenticación de usuarios
  */
-export const login = catchAsync(async (req: any, res: Response, next: NextFunction) => {
+// export const login = catchAsync(async (req: any, res: Response, next: NextFunction) => {
+//   const { email, password } = req.body;
+
+//   if (!email || !password) {
+//     throw new AppError('El correo electrónico y la contraseña son obligatorios', 400);
+//   }
+
+//   const user = await db.users.findOne({ where: { email } });
+//   if (!user || !(await bcrypt.compare(password, user.password))) { //TODO: recuperar cuenta
+//     throw new AppError('Correo electrónico o contraseña no válidos', 401);
+//   }
+
+//   const payload = {
+//     id: user.id,
+//     role: user.userType,
+//     username: user.commerceName,
+//   };
+
+//   const accessToken = generateAccessToken(payload);
+//   const refreshToken = generateRefreshToken(payload);
+
+//   return res.status(200).json({
+//     status: 'success',
+//     accessToken: accessToken,
+//     refreshToken: refreshToken,
+//   });
+// });
+
+/**
+ * Función de inicio de sesión que maneja la autenticación de usuarios usando handlebars
+ */
+export const login = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    throw new AppError('El correo electrónico y la contraseña son obligatorios', 400);
+    return res.render('login', { title: 'Login', error: 'El correo electrónico y la contraseña son obligatorios' });
   }
 
   const user = await db.users.findOne({ where: { email } });
   if (!user || !(await bcrypt.compare(password, user.password))) { //TODO: recuperar cuenta
-    throw new AppError('Correo electrónico o contraseña no válidos', 401);
+    return res.render('login', { title: 'Login', error: 'Correo electrónico o contraseña no válidos' });
   }
 
   const payload = {
@@ -132,14 +164,13 @@ export const login = catchAsync(async (req: any, res: Response, next: NextFuncti
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
 
+  // Enviar los tokens al cliente
   return res.status(200).json({
     status: 'success',
     accessToken: accessToken,
     refreshToken: refreshToken,
   });
 });
-
-
 
 
 /**
@@ -181,31 +212,82 @@ export const refresh = catchAsync(async (req: Request, res: Response, next: Next
 /**
  * Función de autenticación que verifica si el usuario está autenticado
  */
-export const authentication = catchAsync(async (req: any, res: Response, next: NextFunction) => {
-  // 1. Obtener el token de los encabezados
-  let idToken = '';
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    idToken = req.headers.authorization.split(' ')[1];
+// export const authentication = catchAsync(async (req: any, res: Response, next: NextFunction) => {
+//   // 1. Obtener el token de los encabezados
+//   let idToken = '';
+//   if (
+//     req.headers.authorization &&
+//     req.headers.authorization.startsWith('Bearer')
+//   ) {
+//     idToken = req.headers.authorization.split(' ')[1];
+//   }
+//   if (!idToken) {
+//     return next(new AppError('Por favor inicie sesión para obtener acceso', 401));
+//   }
+
+//   // 2. Verificación del token
+//   const tokenDetail: any = jwt.verify(idToken, process.env.JWT_SECRET_KEY as string);
+
+//   // 3. Obtener los detalles del usuario de la base de datos y agregar al objeto req
+//   const freshUser = await db.users.findByPk(tokenDetail.id);
+
+//   if (!freshUser) {
+//     return next(new AppError('El usuario ya no existe', 400));
+//   }
+//   req.user = freshUser;
+//   return next();
+// });
+
+
+declare module 'express' {
+  interface Request {
+    user?: any;
+   }
+}
+
+
+export const authentication = async (req: Request, res: Response, next: NextFunction) => {
+  let token = '';
+
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies && req.cookies.accessToken) {
+    token = req.cookies.accessToken;
   }
-  if (!idToken) {
+
+  if (!token) {
     return next(new AppError('Por favor inicie sesión para obtener acceso', 401));
   }
 
-  // 2. Verificación del token
-  const tokenDetail: any = jwt.verify(idToken, process.env.JWT_SECRET_KEY as string);
+  try {
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET_KEY as string);
+    const freshUser = await db.users.findByPk(decoded.id);
 
-  // 3. Obtener los detalles del usuario de la base de datos y agregar al objeto req
-  const freshUser = await db.users.findByPk(tokenDetail.id);
+    if (!freshUser) {
+      return next(new AppError('El usuario ya no existe', 400));
+    }
 
-  if (!freshUser) {
-    return next(new AppError('El usuario ya no existe', 400));
+    req.user = freshUser;
+    console.log(req.user); // Verifica que el campo role esté presente
+    next();
+  } catch (err) {
+    return next(new AppError('Token inválido o expirado', 401));
   }
-  req.user = freshUser;
-  return next();
-});
+};
+
+
+export const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+  if (req.cookies && req.cookies.accessToken) {
+    try {
+      jwt.verify(req.cookies.accessToken, process.env.JWT_SECRET_KEY as string);
+      return res.redirect('/api/v1/view'); // Redirigir a la página principal si el usuario está autenticado
+    } catch (err) {
+      return next(); // Token inválido o expirado, permitir acceso a la página de login
+    }
+  } else {
+    next(); // No hay token, permitir acceso a la página de login
+  }
+};
 
 /**
  * Función de perfil que obtiene la información del usuario autenticado

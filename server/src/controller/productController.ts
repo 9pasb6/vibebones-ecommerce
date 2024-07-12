@@ -158,6 +158,9 @@ const getAllProducts = catchAsync(async (req: Request, res: Response, next: Next
   });
 });
 
+
+
+
 // ----------------------------------------------
 /**
  * Recupera todos los productos de un inventario.
