@@ -93,3 +93,97 @@ npm run dev
 
 Este README proporciona instrucciones detalladas para configurar y ejecutar el servidor backend, incluyendo la instalación de dependencias, el uso de Docker para la base de datos, la migración de modelos y seeders, y el acceso y registro en pgAdmin para la administración de la base de datos PostgreSQL.
 
+
+---------------------------------------------------------
+
+Para complementar el README con la sección sobre el front-end hecho en Handlebars, considerando el contexto del desarrollo y las rutas definidas en tu aplicación Express, aquí tienes la sección correspondiente:
+
+---
+
+# Front-end (Cliente) con Handlebars
+
+## Configuración inicial
+
+1. Asegúrese de tener configurado y ejecutando el servidor backend según las instrucciones proporcionadas en la sección anterior.
+
+## Rutas y vistas en Handlebars
+
+El front-end de esta aplicación utiliza Handlebars como motor de plantillas para renderizar vistas dinámicas. A continuación se detallan las rutas y las vistas asociadas:
+
+### Rutas y vistas principales
+
+- **Inicio de sesión (Login)**
+
+  - **Ruta:** `/login`
+  - **Descripción:** Permite a los usuarios autenticados iniciar sesión.
+  - **Vista:** `login.hbs`
+
+- **Registro de usuario (Register)**
+
+  - **Ruta:** `/register`
+  - **Descripción:** Permite a los usuarios autenticados registrarse en la plataforma.
+  - **Vista:** `register.hbs`
+
+- **Página de inicio**
+
+  - **Ruta:** `/`
+  - **Descripción:** Página principal mostrando información general.
+  - **Vista:** `index.hbs`
+
+### Gestión de productos
+
+- **Actualizar producto**
+
+  - **Ruta:** `/products/update/:id`
+  - **Descripción:** Permite la actualización de un producto existente.
+  - **Vista:** `updateProduct.hbs`
+
+- **Crear producto**
+
+  - **Ruta:** `/products/create/`
+  - **Descripción:** Permite la creación de un nuevo producto.
+  - **Vista:** `createProduct.hbs`
+
+- **Listado de productos**
+
+  - **Ruta:** `/products`
+  - **Descripción:** Muestra todos los productos disponibles.
+  - **Vista:** `products.hbs`
+
+### Gestión de compras
+
+- **Compra (para administrador)**
+
+  - **Ruta:** `/purchase`
+  - **Descripción:** Visualización de compras para administradores.
+  - **Vista:** `purchase.hbs`
+
+- **Crear compra**
+
+  - **Ruta:** `/purchase/create/:id`
+  - **Descripción:** Permite la generación de una nueva compra.
+  - **Vista:** `purchaseCreate.hbs`
+
+- **Compras del usuario**
+
+  - **Ruta:** `/purchase/user/`
+  - **Descripción:** Muestra las compras realizadas por el usuario.
+  - **Vista:** `purchaseUser.hbs`
+
+### Carrito de compras
+
+- **Carrito de compras**
+
+  - **Ruta:** `/cart`
+  - **Descripción:** Visualización y gestión del carrito de compras.
+  - **Vista:** `cart.hbs`
+
+## Uso y desarrollo
+
+- Asegúrese de que el servidor backend esté activo y ejecutándose para utilizar correctamente las rutas y vistas mencionadas.
+  
+- Personalice las vistas de Handlebars según las necesidades específicas de su aplicación, asegurándose de integrar correctamente con las funcionalidades implementadas en el backend.
+
+---
+
+Este README proporciona una visión general de las rutas y vistas configuradas en el front-end de la aplicación utilizando Handlebars. Asegúrese de tener correctamente configurado tanto el servidor backend como el entorno para el desarrollo front-end para un funcionamiento óptimo de la aplicación.
