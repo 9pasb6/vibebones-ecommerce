@@ -1,4 +1,4 @@
-Here's the GitHub README content for your backend project:
+
 
 ---
 
@@ -13,6 +13,7 @@ Here's the GitHub README content for your backend project:
    ```bash
    npm install
    ```
+3. En caso de no existir la carpeta dist utilizar el comando `tsc` para compilar el Ts a Js
 
 ## Uso de Docker (opcional)
 
