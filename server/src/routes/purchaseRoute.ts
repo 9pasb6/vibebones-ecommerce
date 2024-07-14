@@ -1,5 +1,10 @@
 import { authentication, restrictTo } from "../controller/authController";
-const { generatePurchase } = require("../controller/purchaseController"); // Asegúrate de ajustar la ruta según tu estructura
+const { 
+    generatePurchase,
+    getAllPurchases, 
+    getPurchasesByUserId,
+
+ } = require("../controller/purchaseController"); // Asegúrate de ajustar la ruta según tu estructura
 
 const router = require("express").Router();
 
@@ -36,6 +41,12 @@ const router = require("express").Router();
  *       401:
  *         description: Unauthorized
  */
-router.route("/").post(authentication, restrictTo("ADMIN", "USER", "LOCATION"), generatePurchase); // both admin and commerce can access
+router.route("/").post(authentication, restrictTo("ADMIN", "USER", "LOCATION"), generatePurchase); 
+
+router.route("/").get(authentication, restrictTo("ADMIN", "USER", "LOCATION"), getAllPurchases); 
+
+router.route("/:id").get(authentication, restrictTo("ADMIN", "USER", "LOCATION"), getPurchasesByUserId); 
+
+
 
 module.exports = router;

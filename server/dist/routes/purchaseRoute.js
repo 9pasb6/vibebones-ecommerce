@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const authController_1 = require("../controller/authController");
-const { generatePurchase } = require("../controller/purchaseController"); // Asegúrate de ajustar la ruta según tu estructura
+const { generatePurchase, getAllPurchases, getPurchasesByUserId, } = require("../controller/purchaseController"); // Asegúrate de ajustar la ruta según tu estructura
 const router = require("express").Router();
 /**
  * @swagger
@@ -36,6 +36,8 @@ const router = require("express").Router();
  *       401:
  *         description: Unauthorized
  */
-router.route("/").post(authController_1.authentication, (0, authController_1.restrictTo)("ADMIN", "USER", "LOCATION"), generatePurchase); // both admin and commerce can access
+router.route("/").post(authController_1.authentication, (0, authController_1.restrictTo)("ADMIN", "USER", "LOCATION"), generatePurchase);
+router.route("/").get(authController_1.authentication, (0, authController_1.restrictTo)("ADMIN", "USER", "LOCATION"), getAllPurchases);
+router.route("/:id").get(authController_1.authentication, (0, authController_1.restrictTo)("ADMIN", "USER", "LOCATION"), getPurchasesByUserId);
 module.exports = router;
 //# sourceMappingURL=purchaseRoute.js.map

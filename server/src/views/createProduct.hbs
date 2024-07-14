@@ -1,26 +1,66 @@
 {{>navigation}}
-<h1>{{title}}</h1>
+<!-- updateProduct.hbs -->
+<div class="container">
+  <h1 class="text-center">Crear Producto</h1>
 
-<form action="/api/v1/products" method="POST">
-  <div>
-    <label for="title">Título:</label>
-    <input type="text" id="title" name="title" required>
-  </div>
-  <div>
-    <label for="description">Descripción:</label>
-    <input type="text" id="description" name="description" required>
-  </div>
-  <div>
-    <label for="price">Precio:</label>
-    <input type="number" id="price" name="price" required>
-  </div>
-  <div>
-    <label for="stock">Stock:</label>
-    <input type="number" id="stock" name="stock" required>
-  </div>
-  <div>
-    <label for="category_id">Categoría:</label>
-    <input type="number" id="category_id" name="category_id" required>
-  </div>
-  <button type="submit">Crear Producto</button>
-</form>
+  <form id="create-product-form" action="/api/v1/products/" method="POST">
+    <div class="mb-3">
+      <label for="title" class="form-label">Título</label>
+      <input type="text" class="form-control" id="title" name="title" required>
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Descripción</label>
+      <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+    </div>
+    <div class="mb-3">
+      <label for="price" class="form-label">Precio</label>
+      <input type="number" class="form-control" id="price" name="price" step="0.01" required>
+    </div>
+    <div class="mb-3">
+      <label for="stock" class="form-label">Stock</label>
+      <input type="number" class="form-control" id="stock" name="stock" required>
+    </div>
+    <div class="mb-3">
+      <label for="tax" class="form-label">Impuesto</label>
+      <input type="number" class="form-control" id="tax" name="tax" step="0.01">
+    </div>
+    <div class="mb-3">
+      <label for="category_id" class="form-label">ID de Categoría</label>
+      <input type="number" class="form-control" id="category_id" name="category_id" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Crear Producto</button>
+  </form>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const createProductForm = document.getElementById('create-product-form');
+
+    createProductForm.addEventListener('submit', async (event) => {
+      event.preventDefault(); // Prevenir el comportamiento por defecto de envío del formulario
+
+      const formData = new FormData(createProductForm);
+
+      try {
+        const response = await fetch('/api/v1/products/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(Object.fromEntries(formData.entries())),
+        });
+
+        const data = await response.json();
+
+        if (response.status === 201) { // 201 es el código de estado para creación exitosa
+          console.log('Producto creado:', data.message);
+          window.location.href = '/api/v1/view'; // Redirigir a la página principal después de crear el producto
+        } else {
+          console.error('Error al crear producto:', data.message);
+        }
+      } catch (error) {
+        console.error('Error al crear producto:', error.message);
+      }
+    });
+  });
+</script>

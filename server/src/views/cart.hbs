@@ -1,0 +1,189 @@
+{{> navigation }}
+
+<div class="container">
+  <h1 class="text-center">Tu Carrito</h1>
+
+  <div id="cart-details">
+    <div class="row">
+      <div class="col">
+        <h4>Detalles del Carrito</h4>
+        <ul class="list-group">
+          <li class="list-group-item"><strong>Carrito ID:</strong> {{cart.id}}</li>
+          <li class="list-group-item"><strong>Usuario:</strong> {{cart.user.email}}</li>
+          <li class="list-group-item"><strong>Estado:</strong> {{#if cart.status}}Activo{{else}}Inactivo{{/if}}</li>
+          <li class="list-group-item"><strong>Creado:</strong> {{cart.createdAt}}</li>
+          <li class="list-group-item"><strong>Actualizado:</strong> {{cart.updatedAt}}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col">
+        <h4>Productos en el Carrito</h4>
+        {{#if cart.cart_products.length}}
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Producto</th>
+                <th scope="col">Cantidad</th>
+                <th scope="col">Precio por Cantidad</th>
+                <th scope="col">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each cart.cart_products}}
+                <tr>
+                  <th scope="row">{{@index}}</th>
+                  <td>{{this.product.title}}</td>
+                  <td>{{this.quantity}}</td>
+                  <td>{{this.price_quantity}}</td>
+                  <td>
+                    <button type="button" class="btn btn-danger btn-sm remove-from-cart" data-product-id="{{this.product.id}}">Eliminar</button>
+                  </td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+          <div class="text-end">
+            <h5><strong>Total: </strong><span id="cart-total"></span></h5>
+            <a href="#" id="generate-purchase" class="btn btn-success">Generar Compra</a>
+          </div>
+        {{else}}
+          <p>No hay productos en el carrito.</p>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const cartId = getCartIdFromCookies(); // Función para obtener el cart_id de las cookies
+
+    if (cartId) {
+      const response = await fetch(`/api/v1/carts/${cartId}`);
+      const data = await response.json();
+
+      if (response.status === 200) {
+        const cartDetailsContainer = document.getElementById('cart-details');
+        const cart = data.data;
+
+        // Calcular el total del carrito
+        const total = cart.cart_products.reduce((sum, item) => sum + item.price_quantity, 0);
+
+        // Mostrar detalles del carrito
+        const cartDetailsHtml = `
+          <div class="row">
+            <div class="col">
+              <h4>Detalles del Carrito</h4>
+              <ul class="list-group">
+                <li class="list-group-item"><strong>Carrito ID:</strong> ${cart.id}</li>
+                <li class="list-group-item"><strong>Usuario:</strong> ${cart.user.email}</li>
+                <li class="list-group-item"><strong>Estado:</strong> ${cart.status ? 'Activo' : 'Inactivo'}</li>
+                <li class="list-group-item"><strong>Creado:</strong> ${cart.createdAt}</li>
+                <li class="list-group-item"><strong>Actualizado:</strong> ${cart.updatedAt}</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="row mt-4">
+            <div class="col">
+              <h4>Productos en el Carrito</h4>
+              ${cart.cart_products.length > 0 ? `
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Producto</th>
+                      <th scope="col">Cantidad</th>
+                      <th scope="col">Precio por Cantidad</th>
+                      <th scope="col">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${cart.cart_products.map((item, index) => `
+                      <tr>
+                        <th scope="row">${index + 1}</th>
+                        <td>${item.product.title}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.price_quantity}</td>
+                        <td>
+                          <button type="button" class="btn btn-danger btn-sm remove-from-cart" data-product-id="${item.product.id}">Eliminar</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+                <div class="text-end">
+                  <h5><strong>Total: </strong>${total}</h5>
+                  <a href="/api/v1/view/purchase/create/${cart.id}" id="generate-purchase" class="btn btn-success">Generar Compra</a>
+                </div>
+              ` : '<p>No hay productos en el carrito.</p>'}
+            </div>
+          </div>
+        `;
+
+        cartDetailsContainer.innerHTML = cartDetailsHtml;
+
+        // Agregar evento para eliminar producto del carrito
+        document.querySelectorAll('.remove-from-cart').forEach(button => {
+          button.addEventListener('click', async () => {
+            const productId = parseInt(button.getAttribute('data-product-id'), 10); // Asegurar que sea un número entero
+            console.log('Eliminando producto del carrito con ID:', productId);
+
+            try {
+              const response = await fetch(`/api/v1/carts/products/delete`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  cartId: cartId, // Ya es un entero
+                  productId: productId, // Ya es un entero
+                }),
+              });
+
+              // Verificar que la respuesta sea JSON
+              const contentType = response.headers.get('content-type');
+              if (!contentType || !contentType.includes('application/json')) {
+                console.error('Respuesta inesperada del servidor:', await response.text());
+                return;
+              }
+
+              const responseData = await response.json();
+
+              if (response.status === 200) {
+                console.log('Producto eliminado del carrito:', responseData.message);
+                window.location.reload();
+              } else {
+                console.error('Error al eliminar producto del carrito:', responseData.message);
+              }
+            } catch (error) {
+              console.error('Error en la solicitud DELETE:', error.message);
+            }
+          });
+        });
+      } else {
+        console.error('Error al cargar detalles del carrito:', data.message);
+      }
+    } else {
+      console.error('No se encontró el cart_id en las cookies.');
+    }
+  } catch (error) {
+    console.error('Error al cargar detalles del carrito:', error.message);
+  }
+});
+
+function getCartIdFromCookies() {
+  const cookies = document.cookie.split(';');
+  for (let cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'cart_id') {
+      return parseInt(value, 10); // Convertir a entero
+    }
+  }
+  return null;
+}
+</script>

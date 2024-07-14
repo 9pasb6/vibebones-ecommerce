@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.restrictTo = exports.profile = exports.authentication = exports.refresh = exports.login = exports.signup = exports.recoverPassword = void 0;
+exports.restrictTo = exports.profile = exports.isAuthenticated = exports.authentication = exports.refresh = exports.login = exports.signup = exports.recoverPassword = void 0;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const db = require('../db/models/index');
@@ -107,14 +107,39 @@ exports.signup = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0,
 /**
  * Función de inicio de sesión que maneja la autenticación de usuarios
  */
+// export const login = catchAsync(async (req: any, res: Response, next: NextFunction) => {
+//   const { email, password } = req.body;
+//   if (!email || !password) {
+//     throw new AppError('El correo electrónico y la contraseña son obligatorios', 400);
+//   }
+//   const user = await db.users.findOne({ where: { email } });
+//   if (!user || !(await bcrypt.compare(password, user.password))) { //TODO: recuperar cuenta
+//     throw new AppError('Correo electrónico o contraseña no válidos', 401);
+//   }
+//   const payload = {
+//     id: user.id,
+//     role: user.userType,
+//     username: user.commerceName,
+//   };
+//   const accessToken = generateAccessToken(payload);
+//   const refreshToken = generateRefreshToken(payload);
+//   return res.status(200).json({
+//     status: 'success',
+//     accessToken: accessToken,
+//     refreshToken: refreshToken,
+//   });
+// });
+/**
+ * Función de inicio de sesión que maneja la autenticación de usuarios usando handlebars
+ */
 exports.login = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     if (!email || !password) {
-        throw new appError_1.default('El correo electrónico y la contraseña son obligatorios', 400);
+        return res.render('login', { title: 'Login', error: 'El correo electrónico y la contraseña son obligatorios' });
     }
     const user = yield db.users.findOne({ where: { email } });
     if (!user || !(yield bcrypt.compare(password, user.password))) { //TODO: recuperar cuenta
-        throw new appError_1.default('Correo electrónico o contraseña no válidos', 401);
+        return res.render('login', { title: 'Login', error: 'Correo electrónico o contraseña no válidos' });
     }
     const payload = {
         id: user.id,
@@ -123,6 +148,7 @@ exports.login = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, 
     };
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);
+    // Enviar los tokens al cliente
     return res.status(200).json({
         status: 'success',
         accessToken: accessToken,
@@ -160,29 +186,47 @@ exports.refresh = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0
         throw new appError_1.default('Refresh token no válido o ha expirado', 401);
     }
 }));
-/**
- * Función de autenticación que verifica si el usuario está autenticado
- */
-exports.authentication = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    // 1. Obtener el token de los encabezados
-    let idToken = '';
-    if (req.headers.authorization &&
-        req.headers.authorization.startsWith('Bearer')) {
-        idToken = req.headers.authorization.split(' ')[1];
+const authentication = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    let token = '';
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
     }
-    if (!idToken) {
+    else if (req.cookies && req.cookies.accessToken) {
+        token = req.cookies.accessToken;
+    }
+    if (!token) {
         return next(new appError_1.default('Por favor inicie sesión para obtener acceso', 401));
     }
-    // 2. Verificación del token
-    const tokenDetail = jwt.verify(idToken, process.env.JWT_SECRET_KEY);
-    // 3. Obtener los detalles del usuario de la base de datos y agregar al objeto req
-    const freshUser = yield db.users.findByPk(tokenDetail.id);
-    if (!freshUser) {
-        return next(new appError_1.default('El usuario ya no existe', 400));
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        const freshUser = yield db.users.findByPk(decoded.id);
+        if (!freshUser) {
+            return next(new appError_1.default('El usuario ya no existe', 400));
+        }
+        req.user = freshUser;
+        console.log(req.user); // Verifica que el campo role esté presente
+        next();
     }
-    req.user = freshUser;
-    return next();
-}));
+    catch (err) {
+        return next(new appError_1.default('Token inválido o expirado', 401));
+    }
+});
+exports.authentication = authentication;
+const isAuthenticated = (req, res, next) => {
+    if (req.cookies && req.cookies.accessToken) {
+        try {
+            jwt.verify(req.cookies.accessToken, process.env.JWT_SECRET_KEY);
+            return res.redirect('/api/v1/view'); // Redirigir a la página principal si el usuario está autenticado
+        }
+        catch (err) {
+            return next(); // Token inválido o expirado, permitir acceso a la página de login
+        }
+    }
+    else {
+        next(); // No hay token, permitir acceso a la página de login
+    }
+};
+exports.isAuthenticated = isAuthenticated;
 /**
  * Función de perfil que obtiene la información del usuario autenticado
  */

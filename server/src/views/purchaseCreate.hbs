@@ -1,0 +1,98 @@
+{{> navigation }}
+
+<div class="container">
+  <h1 class="text-center">Generar Compra</h1>
+
+  <div id="purchase-details">
+    <div class="row">
+      <div class="col">
+        <h4>Confirmar Compra</h4>
+        <p>¿Estás seguro de que quieres generar la compra?</p>
+        <button id="confirm-purchase" class="btn btn-success">Confirmar Compra</button>
+      </div>
+    </div>
+
+    <div class="row mt-4" id="purchase-result" style="display:none;">
+      <div class="col">
+        <h4>Detalles de la Compra</h4>
+        <ul class="list-group">
+          <li class="list-group-item"><strong>Mensaje:</strong> <span id="purchase-message"></span></li>
+          <li class="list-group-item"><strong>ID de Compra:</strong> <span id="purchase-id"></span></li>
+          <li class="list-group-item"><strong>Total:</strong> <span id="purchase-total"></span></li>
+          <li class="list-group-item"><strong>Usuario:</strong> <span id="purchase-user"></span></li>
+        </ul>
+
+        <h4 class="mt-4">Productos Comprados</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Producto</th>
+              <th scope="col">Cantidad</th>
+              <th scope="col">Precio por Cantidad</th>
+            </tr>
+          </thead>
+          <tbody id="purchase-products"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const urlParts = window.location.pathname.split('/'); // Dividir la URL por '/'
+  const cartId = urlParts[urlParts.length - 1]; // Obtener el último segmento de la URL, que debería ser el ID del carrito
+
+  document.getElementById('confirm-purchase').addEventListener('click', async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/v1/purchases/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cartId: parseInt(cartId, 10) }), // Convertir el ID a un entero
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert('Compra generada con éxito.');
+
+        // Deshabilitar el botón
+        document.getElementById('confirm-purchase').disabled = true;
+
+        // Mostrar los detalles de la compra
+        document.getElementById('purchase-message').innerText = data.message;
+        document.getElementById('purchase-id').innerText = data.purchaseId;
+        document.getElementById('purchase-total').innerText = data.total;
+        document.getElementById('purchase-user').innerText = `${data.cart.user.commerceName} (${data.cart.user.email})`;
+
+        // Mostrar los productos comprados
+        const productsTableBody = document.getElementById('purchase-products');
+        data.cart.cart_products.forEach((item, index) => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <th scope="row">${index + 1}</th>
+            <td>${item.product.title}</td>
+            <td>${item.quantity}</td>
+            <td>${item.price_quantity}</td>
+          `;
+          productsTableBody.appendChild(row);
+        });
+
+        // Mostrar la sección de resultados
+        document.getElementById('purchase-result').style.display = 'block';
+
+        // Eliminar el ID de las cookies
+        document.cookie = 'cart_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      } else {
+        const errorData = await response.json();
+        alert('Error al generar la compra: ' + errorData.message);
+      }
+    } catch (error) {
+      console.error('Error en la solicitud POST:', error.message);
+      alert('Error al generar la compra.');
+    }
+  });
+});
+</script>

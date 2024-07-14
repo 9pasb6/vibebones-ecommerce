@@ -1,0 +1,107 @@
+{{> navigation }}
+
+<div class="container">
+  <h1 class="text-center">Listado de Compras</h1>
+
+  <div id="purchases-container" class="mt-4">
+    {{#if purchases.length}}
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>ID Compra</th>
+              <th>Nombre de Usuario</th>
+              <th>Total</th>
+              <th>Fecha</th>
+              <th>Productos</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each purchases}}
+              <tr>
+                <td>{{this.id}}</td>
+                <td>{{this.user.commerceName}}</td>
+                <td>{{this.total}}</td>
+                <td>{{formatDate this.date}}</td>
+                <td>
+                  {{#each this.cart.cart_products}}
+                    <p>{{this.product.title}} - {{this.quantity}} unidades</p>
+                  {{/each}}
+                </td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    {{else}}
+      <p class="text-center">No hay compras disponibles.</p>
+    {{/if}}
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const response = await fetch('/api/v1/purchases', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const data = await response.json();
+
+      const purchasesContainer = document.getElementById('purchases-container');
+      purchasesContainer.innerHTML = '';
+
+      if (response.status === 200) {
+        if (data.purchases.length > 0) {
+          const purchasesHtml = data.purchases.map(purchase => `
+            <tr>
+              <td>${purchase.id}</td>
+              <td>${purchase.user.commerceName}</td>
+              <td>${purchase.total}</td>
+              <td>${formatDate(purchase.date)}</td>
+              <td>
+                ${purchase.cart.cart_products.map(cartProduct => `
+                  <p>${cartProduct.product.title} - ${cartProduct.quantity} unidades</p>
+                `).join('')}
+              </td>
+            </tr>
+          `).join('');
+
+          purchasesContainer.innerHTML = `
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>ID Compra</th>
+                    <th>Nombre de Usuario</th>
+                    <th>Total</th>
+                    <th>Fecha</th>
+                    <th>Productos</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${purchasesHtml}
+                </tbody>
+              </table>
+            </div>
+          `;
+        } else {
+          purchasesContainer.innerHTML = '<p class="text-center">No hay compras disponibles.</p>';
+        }
+      } else {
+        console.error('Error al cargar compras:', data.message);
+      }
+    } catch (error) {
+      console.error('Error al cargar compras:', error.message);
+    }
+  });
+
+  // Función para formatear la fecha
+  function formatDate(dateString) {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('es-ES', options);
+  }
+</script>

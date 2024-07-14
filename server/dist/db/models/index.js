@@ -10,7 +10,7 @@ const process_1 = require("process");
 // import setupAssociations from '../associations'; // Ajusta la ruta según sea necesario
 const basename = path_1.default.basename(__filename);
 const env = process_1.env.NODE_ENV || 'development';
-const config = require('../../config/config.ts')[env];
+const config = require('../../config/config.js')[env];
 const db = {};
 let sequelize;
 if (config.use_env_variable) {

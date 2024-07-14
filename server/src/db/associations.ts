@@ -18,6 +18,7 @@ module.exports = (db: DB): void => {
   db.cart_products.belongsTo(db.carts, { foreignKey: 'cart_id' });
 
   db.carts.hasMany(db.purchases, { foreignKey: 'cart_id' }); // Establece la relación con carts usando cart_id
+  db.purchases.belongsTo(db.carts, { foreignKey: 'cart_id' });
 
   db.products.hasMany(db.cart_products, { foreignKey: 'product_id' });
   db.cart_products.belongsTo(db.products, { foreignKey: 'product_id' });

@@ -12,31 +12,44 @@
             <a class="nav-link" href="/api/v1/view">Productos</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/products/create">Crear Producto</a>
+            <a class="nav-link" href="/api/v1/view/products/create">Crear Producto</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/purchases">Listar Compras</a>
+            <a class="nav-link" href="/api/v1/view/purchase">Listar Compras</a>
           </li>
-          <li class="nav-item">
+          {{!-- <li class="nav-item">
             <form class="d-flex" action="/products/search" method="GET">
               <input class="form-control me-2" type="search" placeholder="Buscar por ID" aria-label="Search" name="id">
               <button class="btn btn-outline-success" type="submit">Buscar</button>
             </form>
-          </li>
+          </li> --}}
         {{else if (eq user.dataValues.userType 'USER')}}
           <li class="nav-item">
-            <a class="nav-link" href="/products">Todos los Productos</a>
+            <a class="nav-link" href="/api/v1/view/">Todos los Productos</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/my-purchases">Mis Compras</a>
+            <a class="nav-link" href="/api/v1/view/purchase/user/">Mis Compras</a>
           </li>
         {{/if}}
       </ul>
       {{#if (eq user.dataValues.userType 'USER')}}
-        <a class="btn btn-primary" href="/cart">
+        <a class="btn btn-primary me-2" href="/api/v1/view/cart">
           <i class="fas fa-shopping-cart"></i> Carrito
         </a>
       {{/if}}
+      <button class="btn btn-danger" id="logout-btn">Log Out</button>
     </div>
   </div>
 </nav>
+
+<script>
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    // Eliminar las cookies del lado del cliente
+    document.cookie = 'accessToken=; Max-Age=0; path=/';
+    document.cookie = 'refreshToken=; Max-Age=0; path=/';
+    document.cookie = 'cart_id=; Max-Age=0; path=/';
+    
+    // Redirigir al usuario a la página de inicio de sesión
+    window.location.href = '/api/v1/view/login';
+  });
+</script>

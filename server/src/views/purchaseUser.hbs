@@ -1,0 +1,97 @@
+{{> navigation }}
+
+<div class="container">
+  <h1 class="text-center">Listado de Compras</h1>
+
+  <div id="purchases-container" class="mt-4">
+    {{#if purchases.length}}
+      <div class="row">
+        {{#each purchases}}
+          <div class="col-md-4 mb-4">
+            <div class="card">
+              <div class="card-header">
+                ID Compra: {{this.id}}
+              </div>
+              <div class="card-body">
+                <h5 class="card-title">Usuario: {{this.user.commerceName}}</h5>
+                <p class="card-text">Total: ${{this.total}}</p>
+                <p class="card-text">Fecha: {{formatDate this.date}}</p>
+                <h6 class="card-subtitle mb-2 text-muted">Productos Comprados</h6>
+                <ul class="list-group">
+                  {{#each this.cart.cart_products}}
+                    <li class="list-group-item">
+                      {{this.product.title}} - Cantidad: {{this.quantity}} - Precio por Cantidad: ${{this.price_quantity}}
+                    </li>
+                  {{/each}}
+                </ul>
+              </div>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <p class="text-center">No hay compras disponibles.</p>
+    {{/if}}
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const response = await fetch('/api/v1/purchases', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    const data = await response.json();
+    const purchasesContainer = document.getElementById('purchases-container');
+
+    if (response.ok) {
+      if (data.purchases.length > 0) {
+        const purchasesHtml = data.purchases.map(purchase => `
+          <div class="col-md-4 mb-4">
+            <div class="card">
+              <div class="card-header">
+                ID Compra: ${purchase.id}
+              </div>
+              <div class="card-body">
+                <h5 class="card-title">Usuario: ${purchase.user.commerceName}</h5>
+                <p class="card-text">Total: $${purchase.total}</p>
+                <p class="card-text">Fecha: ${formatDate(purchase.date)}</p>
+                <h6 class="card-subtitle mb-2 text-muted">Productos Comprados</h6>
+                <ul class="list-group">
+                  ${purchase.cart.cart_products.map(cartProduct => `
+                    <li class="list-group-item">
+                      ${cartProduct.product.title} - Cantidad: ${cartProduct.quantity} - Precio por Cantidad: $${cartProduct.price_quantity}
+                    </li>
+                  `).join('')}
+                </ul>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        purchasesContainer.innerHTML = `
+          <div class="row">
+            ${purchasesHtml}
+          </div>
+        `;
+      } else {
+        purchasesContainer.innerHTML = '<p class="text-center">No hay compras disponibles.</p>';
+      }
+    } else {
+      console.error('Error al cargar compras:', data.message);
+    }
+  } catch (error) {
+    console.error('Error al cargar compras:', error.message);
+  }
+});
+
+// Función para formatear la fecha
+function formatDate(dateString) {
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString('es-ES', options);
+}
+</script>

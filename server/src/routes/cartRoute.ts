@@ -255,7 +255,7 @@ router.route("/product").post(authentication, restrictTo("ADMIN", "USER", "LOCAT
  *       500:
  *         description: Internal server error
  */
-router.delete("/:userId/products/:productId", authentication, restrictTo("ADMIN", "USER", "LOCATION"), deleteProductFromCart);
+router.delete("/products/delete", authentication, restrictTo("ADMIN", "USER", "LOCATION"), deleteProductFromCart);
 
 
 module.exports = router;

@@ -204,7 +204,7 @@ const deleteCart = catchAsync(async (req: Request, res: Response) => {
 
 
 const addProductToCart = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { userId, productId, quantity } = req.body;
+  const { userId, cartId, productId, quantity } = req.body;
 
   try {
     // Verificar si el producto existe
@@ -213,13 +213,23 @@ const addProductToCart = catchAsync(async (req: Request, res: Response, next: Ne
       return next(new AppError('Producto no encontrado', 404));
     }
 
-    // Buscar el carrito del usuario
+    // Verificar si el carrito pertenece al usuario y está activo
     const cart = await db.carts.findOne({
-      where: { user_id: userId },
+      where: { id: cartId, user_id: userId, status: true },
+      include: [{
+        model: db.cart_products,
+        include: [{
+          model: db.products,
+          attributes: ['id', 'title', 'price'],
+        }],
+      }, {
+        model: db.users,
+        attributes: ['id', 'email'],
+      }],
     });
 
     if (!cart) {
-      return next(new AppError('Carrito no encontrado', 404));
+      return next(new AppError('Carrito no encontrado o no activo para este usuario', 404));
     }
 
     // Verificar si el producto ya está en el carrito
@@ -247,6 +257,10 @@ const addProductToCart = catchAsync(async (req: Request, res: Response, next: Ne
     // Recalcular el total del carrito
     const cartProducts = await db.cart_products.findAll({
       where: { cart_id: cart.id },
+      include: [{
+        model: db.products,
+        attributes: ['id', 'title', 'price'],
+      }],
     });
 
     const total = cartProducts.reduce((sum: number, item: any) => sum + item.price_quantity, 0);
@@ -254,17 +268,39 @@ const addProductToCart = catchAsync(async (req: Request, res: Response, next: Ne
     // Actualizar el carrito con el nuevo total
     await cart.update({ total });
 
-    return res.status(201).json({
-      status: "success",
-      message: "Producto agregado al carrito exitosamente",
-      cartProduct,
-      total,
-    });
+    // Construir la respuesta en el formato requerido
+    const responseData = {
+      status: 'success',
+      data: {
+        id: cart.id,
+        user_id: cart.user_id,
+        status: cart.status,
+        createdAt: cart.createdAt,
+        updatedAt: cart.updatedAt,
+        user: {
+          id: cart.user.id,
+          email: cart.user.email,
+        },
+        cart_products: cartProducts.map((cp:any) => ({
+          cart_id: cp.cart_id,
+          product_id: cp.product.id,
+          quantity: cp.quantity,
+          price_quantity: cp.price_quantity,
+          product: {
+            id: cp.product.id,
+            title: cp.product.title,
+            price: cp.product.price,
+          },
+        })),
+      },
+    };
+
+    return res.status(201).json(responseData);
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      status: "error",
-      message: "Error al agregar el producto al carrito",
+      status: 'error',
+      message: 'Error al agregar el producto al carrito',
     });
   }
 });
@@ -276,14 +312,23 @@ const addProductToCart = catchAsync(async (req: Request, res: Response, next: Ne
 /**
  * Elimina un producto del carrito.
  */
+
 const deleteProductFromCart = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { userId, productId } = req.params; // Utilizamos req.params para obtener userId y productId
+  const { cartId, productId } = req.body; // Utilizamos req.params para obtener cartId
+  // const { productId } = req.body; // Utilizamos req.body para obtener productId
+
+  console.log("desde delete cart product")
+  console.log(cartId)
+  console.log(productId)
+
 
   try {
-    // Buscar el carrito del usuario
+    // Verificar si el carrito existe y pertenece al usuario
     const cart = await db.carts.findOne({
-      where: { user_id: userId },
+      where: { id: cartId },
     });
+
+
 
     if (!cart) {
       throw new AppError('Carrito no encontrado', 404);
@@ -291,7 +336,7 @@ const deleteProductFromCart = catchAsync(async (req: Request, res: Response, nex
 
     // Verificar si el producto está en el carrito
     const cartProduct = await db.cart_products.findOne({
-      where: { cart_id: cart.id, product_id: productId },
+      where: { cart_id: cartId, product_id: productId },
     });
 
     if (!cartProduct) {
@@ -312,7 +357,7 @@ const deleteProductFromCart = catchAsync(async (req: Request, res: Response, nex
 });
 
 
-export default deleteProductFromCart;
+
 
 
 module.exports = { getAllCarts, getCartById, createCart, updateCart, deleteCart, addProductToCart, deleteProductFromCart };
